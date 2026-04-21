@@ -1,0 +1,62 @@
+@import "tailwindcss";
+
+@import url('https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Grotesk:wght@400;700&family=Inter:wght@400;600&display=swap');
+
+@theme {
+  --font-display: "Archivo Black", sans-serif;
+  --font-boxy: "Space Grotesk", sans-serif;
+  --font-body: "Inter", sans-serif;
+
+  --color-pink-50: #fff5f7;
+  --color-pink-100: #fdf2f8;
+  --color-pink-200: #fce7f3;
+  --color-pink-300: #fbcfe8;
+  --color-pink-400: #f472b6;
+  --color-pink-500: #ec4899;
+  --color-pink-600: #db2777;
+  --color-pink-hot: #ff007f;
+  --color-black-fleur: #000000;
+  
+  --radius-fleur: 0px;
+  --radius-card: 0px;
+}
+
+@layer base {
+  body {
+    @apply bg-white text-black-fleur font-boxy m-0 p-0 overflow-x-hidden;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display font-black leading-tight uppercase;
+  }
+
+  * {
+    @apply border-black rounded-none!;
+  }
+}
+
+@layer components {
+  .nav-link {
+    @apply font-boxy font-black text-[10px] uppercase tracking-[0.2em] text-black hover:text-pink-500 px-6 py-3 transition-all border-b-2 border-transparent hover:border-pink-500;
+  }
+  
+  .nav-link-active {
+    @apply text-pink-500 border-pink-500;
+  }
+
+  .btn-fleur {
+    @apply bg-black text-white px-10 py-4 rounded-none font-boxy font-black uppercase tracking-widest hover:bg-pink-500 transition-all active:scale-95 flex items-center justify-center gap-3 border-2 border-black shadow-[6px_6px_0px_0px_rgba(255,0,127,1)];
+  }
+
+  .card-fleur {
+    @apply bg-white border-2 border-black rounded-none shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] p-4 transition-all duration-300 hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[12px_12px_0px_0px_rgba(255,0,127,0.3)];
+  }
+
+  .glass-header {
+    @apply bg-white border-b-2 border-black sticky top-0 z-50;
+  }
+  
+  .motto-banner {
+    @apply bg-pink-500 text-white text-[10px] font-boxy font-black uppercase tracking-[0.4em] py-2.5 text-center w-full border-b-2 border-black;
+  }
+}

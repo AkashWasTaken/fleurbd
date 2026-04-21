@@ -1,0 +1,112 @@
+{
+  "entities": {
+    "Product": {
+      "title": "Product",
+      "description": "An e-commerce product",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "slug": { "type": "string" },
+        "category": { "type": "string", "enum": ["jewelry", "bangles", "fashion", "nails", "accessories"] },
+        "description": { "type": "string" },
+        "price": { "type": "number" },
+        "compareAtPrice": { "type": "number" },
+        "stock": { "type": "number" },
+        "images": { 
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "url": { "type": "string" },
+              "publicId": { "type": "string" }
+            }
+          }
+        },
+        "featured": { "type": "boolean" },
+        "active": { "type": "boolean" },
+        "tags": { "type": "array", "items": { "type": "string" } },
+        "instagramUrl": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "slug", "category", "price"]
+    },
+    "Order": {
+      "title": "Order",
+      "description": "A customer order",
+      "type": "object",
+      "properties": {
+        "orderNumber": { "type": "string" },
+        "customer": {
+          "type": "object",
+          "properties": {
+            "name": { "type": "string" },
+            "phone": { "type": "string" },
+            "address": { "type": "string" },
+            "notes": { "type": "string" }
+          },
+          "required": ["name", "phone", "address"]
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "productId": { "type": "string" },
+              "name": { "type": "string" },
+              "price": { "type": "number" },
+              "qty": { "type": "number" },
+              "image": { "type": "string" }
+            }
+          }
+        },
+        "subtotal": { "type": "number" },
+        "deliveryCharge": { "type": "number" },
+        "total": { "type": "number" },
+        "paymentMethod": { "type": "string", "enum": ["COD", "bKash", "Nagad", "Bank"] },
+        "transactionId": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "confirmed", "processing", "shipped", "delivered", "cancelled"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["orderNumber", "customer", "items", "total", "status"]
+    },
+    "Settings": {
+      "title": "Settings",
+      "description": "Store settings",
+      "type": "object",
+      "properties": {
+        "storeName": { "type": "string" },
+        "tagline": { "type": "string" },
+        "whatsapp": { "type": "string" },
+        "bkashNumber": { "type": "string" },
+        "nagadNumber": { "type": "string" },
+        "bankName": { "type": "string" },
+        "bankAccountName": { "type": "string" },
+        "bankAccountNumber": { "type": "string" },
+        "bankRoutingNumber": { "type": "string" },
+        "freeDeliveryAbove": { "type": "number" },
+        "flatDeliveryCharge": { "type": "number" },
+        "announcementText": { "type": "string" },
+        "announcementActive": { "type": "boolean" },
+        "categories": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "Config": {
+      "title": "Config",
+      "description": "Sensitive application configuration",
+      "type": "object",
+      "properties": {
+        "adminPassword": { "type": "string" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["adminPassword"]
+    }
+  },
+  "firestore": {
+    "products": { "schema": "Product", "description": "Store products collection" },
+    "orders": { "schema": "Order", "description": "Customer orders collection" },
+    "settings": { "schema": "Settings", "description": "Single document settings collection" },
+    "config": { "schema": "Config", "description": "Security and internal config" }
+  }
+}
