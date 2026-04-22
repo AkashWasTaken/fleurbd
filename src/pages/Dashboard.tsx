@@ -26,7 +26,10 @@ export default function Dashboard() {
         const prods = allProducts || [];
         const ords = allOrders || [];
 
-        const revenue = ords.reduce((acc, curr) => acc + (curr.total || 0), 0);
+        // Exclude cancelled/pending if you want only recognized revenue, but usually excluding cancelled is standard
+        const revenue = ords
+          .filter(o => o.status !== 'cancelled')
+          .reduce((acc, curr) => acc + (curr.total || 0), 0);
 
         setStats({
           products: prods.length,

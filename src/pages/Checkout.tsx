@@ -50,8 +50,16 @@ export default function Checkout() {
 
   const handleSubmitDetails = (e: React.FormEvent) => {
     e.preventDefault();
+
+    const phoneRegex = /^01\d{9}$/;
+    
     if (!formData.name || !formData.phone || !formData.address) {
       toast.error('GIRL, WE NEED YOUR DETAILS!');
+      return;
+    }
+
+    if (!phoneRegex.test(formData.phone)) {
+      toast.error('NUMBER MUST BE 11 DIGITS (e.g. 018XXXXXXXX)');
       return;
     }
     
@@ -66,7 +74,12 @@ export default function Checkout() {
     setStep('payment');
   };
 
+  const [submitting, setSubmitting] = useState(false);
+
   const handlePlaceOrder = async () => {
+    if (submitting) return;
+    setSubmitting(true);
+    
     const orderData = {
       customer: {
         name: formData.name,
@@ -90,12 +103,20 @@ export default function Checkout() {
     };
 
     try {
-      await orderService.createOrder(orderData);
+      const result = await orderService.createOrder(orderData);
+      if (result?.orderNumber) {
+        const myOrders = JSON.parse(localStorage.getItem('fleur_my_orders') || '[]');
+        myOrders.push(result.orderNumber);
+        localStorage.setItem('fleur_my_orders', JSON.stringify(myOrders.slice(-10))); // keep last 10
+      }
       toast.success(`ORDER PLACED! WE'LL CALL YOU SOON.`);
       clearCart();
       setStep('done');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (error) {
       toast.error('SOMETHING WENT WRONG. TRY AGAIN.');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -139,9 +160,10 @@ export default function Checkout() {
                   <input 
                     type="tel" 
                     value={formData.phone}
-                    onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                    onChange={(e) => setFormData({...formData, phone: e.target.value.replace(/\D/g, '').slice(0, 11)})}
+                    maxLength={11}
                     className="border-2 border-pink-100 bg-pink-50/10 p-5 font-boxy font-bold focus:border-pink-400 transition-all outline-none" 
-                    placeholder="017XXXXXXXX"
+                    placeholder="018XXXXXXXX"
                   />
                 </div>
               </div>
@@ -223,7 +245,13 @@ export default function Checkout() {
                </div>
             </div>
 
-            <button onClick={handlePlaceOrder} className="btn-fleur w-full py-5 text-xl">Place Order Now</button>
+            <button 
+              onClick={handlePlaceOrder} 
+              disabled={submitting}
+              className="btn-fleur w-full py-5 text-xl disabled:opacity-50"
+            >
+              {submitting ? 'PROCESSING...' : 'Place Order Now'}
+            </button>
             <button onClick={() => setStep('details')} className="w-full text-center mt-8 text-[10px] font-black uppercase tracking-widest text-pink-300 hover:text-pink-600 transition-all underline">Modify Details</button>
           </div>
         )}

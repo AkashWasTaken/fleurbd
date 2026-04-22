@@ -72,17 +72,12 @@ export default function Cart() {
                       <span className="text-pink-100">Subtotal ({count()} items)</span>
                       <span>৳{total()}</span>
                    </div>
-                   <div className="flex justify-between uppercase tracking-widest text-xs">
-                      <span className="text-pink-100">Delivery Charge</span>
-                      <span>৳80</span>
-                   </div>
-                   <div className="border-t border-pink-400 pt-6 flex justify-between font-black uppercase text-2xl">
-                      <span className="text-pink-100">Total</span>
-                      <span>৳{total() + 80}</span>
-                   </div>
+                   <p className="text-[10px] text-pink-200 uppercase tracking-widest mt-2 border-t border-pink-400 pt-4 opacity-70">
+                     Delivery charges are calculated at the next step.
+                   </p>
                 </div>
                 <Link to="/checkout" className="w-full bg-white text-pink-600 py-5 text-lg font-black uppercase tracking-widest flex items-center justify-center gap-4 hover:bg-black-fleur hover:text-white transition-all">
-                  Checkout <ArrowRight size={24} />
+                  Proceed to Info <ArrowRight size={24} />
                 </Link>
              </div>
              

@@ -16,7 +16,7 @@ export default function Footer() {
   if (!settings) return null;
 
   return (
-    <footer className="bg-pink-100 text-pink-700 py-20 px-4 border-t-8 border-pink-200">
+    <footer className="bg-pink-100 text-pink-700 py-10 px-4 border-t-8 border-pink-200">
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-16">
         {/* Brand */}
         <div className="flex flex-col gap-8">

@@ -1,12 +1,13 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { Heart, ShoppingCart } from 'lucide-react';
+import { useNavigate, Link } from 'react-router-dom';
+import { ShoppingCart } from 'lucide-react';
 import { useCartStore } from '../store/cartStore';
 import { Product } from '../types';
 import toast from 'react-hot-toast';
 
 export default function ProductCard({ product }: { product: Product, key?: any }) {
   const addItem = useCartStore((state) => state.addItem);
+  const navigate = useNavigate();
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -17,7 +18,21 @@ export default function ProductCard({ product }: { product: Product, key?: any }
       image: product.images[0]?.url || 'https://picsum.photos/seed/placeholder/800/800',
       slug: product.slug
     });
-    toast.success('Added to Bag');
+    
+    toast((t) => (
+      <div className="flex items-center justify-between gap-4 w-full">
+        <span className="font-black uppercase text-[10px]">Added to Bag!</span>
+        <button 
+          onClick={() => {
+            toast.dismiss(t.id);
+            navigate('/checkout');
+          }}
+          className="bg-black text-white px-3 py-1.5 text-[9px] font-black uppercase tracking-widest hover:bg-pink-hot transition-all"
+        >
+          Checkout now?
+        </button>
+      </div>
+    ), { duration: 5000 });
   };
 
   return (

@@ -164,9 +164,59 @@ export const orderService = {
     try {
       const q = query(collection(db, ORDERS_COLLECTION), orderBy('createdAt', 'desc'));
       const snapshot = await getDocs(q);
-      return snapshot.docs.map(doc => ({ id: doc.id, _id: doc.id, ...doc.data() } as Order));
+      return snapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          _id: doc.id,
+          ...data,
+          createdAt: data.createdAt?.toDate?.() ? data.createdAt.toDate().toISOString() : data.createdAt,
+          deliveredAt: data.deliveredAt?.toDate?.() ? data.deliveredAt.toDate().toISOString() : data.deliveredAt,
+        } as Order;
+      });
     } catch (error) {
       handleFirestoreError(error, 'list', ORDERS_COLLECTION);
+    }
+  },
+
+  async getOrdersByNumbers(numbers: string[]) {
+    if (!numbers.length) return [];
+    try {
+      const q = query(collection(db, ORDERS_COLLECTION), where('orderNumber', 'in', numbers));
+      const snapshot = await getDocs(q);
+      return snapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          _id: doc.id,
+          ...data,
+          createdAt: data.createdAt?.toDate?.() ? data.createdAt.toDate().toISOString() : data.createdAt,
+          deliveredAt: data.deliveredAt?.toDate?.() ? data.deliveredAt.toDate().toISOString() : data.deliveredAt,
+        } as Order;
+      }).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    } catch (error) {
+      handleFirestoreError(error, 'list', ORDERS_COLLECTION);
+    }
+  },
+
+  async updateOrder(id: string, updates: Partial<Order>) {
+    try {
+      const docRef = doc(db, ORDERS_COLLECTION, id);
+      await updateDoc(docRef, {
+        ...updates,
+        updatedAt: serverTimestamp()
+      });
+    } catch (error) {
+      handleFirestoreError(error, 'update', `${ORDERS_COLLECTION}/${id}`);
+    }
+  },
+
+  async deleteOrder(id: string) {
+    try {
+      const docRef = doc(db, ORDERS_COLLECTION, id);
+      await deleteDoc(docRef);
+    } catch (error) {
+      handleFirestoreError(error, 'delete', `${ORDERS_COLLECTION}/${id}`);
     }
   }
 };

@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'motion/react';
 
 const navLinks = [
   { label: 'Home', to: '/' },
+  { label: 'My Orders', to: '/my-orders' },
 ];
 
 export default function Header() {
@@ -52,6 +53,9 @@ export default function Header() {
         {/* Action Icons */}
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-1">
+            <Link to="/my-orders" className="p-1.5 text-black hover:text-pink-hot transition-all relative hidden sm:block">
+              <User size={18} />
+            </Link>
             <Link to="/cart" className="p-1.5 text-black hover:text-pink-hot transition-all relative">
               <ShoppingCart size={18} />
               {cartCount > 0 && (

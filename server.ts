@@ -3,8 +3,19 @@ import { createServer as createViteServer } from "vite";
 import path from "path";
 import { fileURLToPath } from "url";
 import dotenv from "dotenv";
+import { v2 as cloudinary } from "cloudinary";
+import multer from "multer";
 
 dotenv.config();
+
+// Configure Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+const upload = multer({ storage: multer.memoryStorage() });
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -18,6 +29,29 @@ async function startServer() {
   // API Routes are now handled on the client via Firebase
   app.get("/api/health", (req, res) => {
     res.json({ status: "ok" });
+  });
+
+  // Cloudinary Upload Route
+  app.post("/api/upload", upload.single("image"), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ error: "No image file provided" });
+      }
+
+      // Convert buffer to base64
+      const b64 = Buffer.from(req.file.buffer).toString("base64");
+      const dataURI = "data:" + req.file.mimetype + ";base64," + b64;
+
+      const result = await cloudinary.uploader.upload(dataURI, {
+        resource_type: "auto",
+        folder: "fleur-products",
+      });
+
+      res.json({ url: result.secure_url, publicId: result.public_id });
+    } catch (error) {
+      console.error("Upload error:", error);
+      res.status(500).json({ error: "Upload failed" });
+    }
   });
 
   // --- VITE MIDDLEWARE ---

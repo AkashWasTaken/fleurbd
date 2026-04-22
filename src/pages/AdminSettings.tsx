@@ -46,6 +46,18 @@ export default function AdminSettings() {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate phone numbers
+    const phoneRegex = /^01\d{9}$/;
+    if (settings.whatsapp && !phoneRegex.test(settings.whatsapp)) {
+      toast.error('WHATSAPP MUST BE 11 DIGITS (01XXXXXXXXX)');
+      return;
+    }
+    if (settings.contactNumber && !phoneRegex.test(settings.contactNumber)) {
+      toast.error('CONTACT MUST BE 11 DIGITS (01XXXXXXXXX)');
+      return;
+    }
+
     setSaving(true);
     try {
       await settingsService.updateSettings(settings);
@@ -107,9 +119,10 @@ export default function AdminSettings() {
                 <input 
                   type="text" 
                   value={settings.whatsapp}
-                  onChange={e => setSettings({...settings, whatsapp: e.target.value})}
+                  onChange={e => setSettings({...settings, whatsapp: e.target.value.replace(/\D/g, '').slice(0, 11)})}
+                  maxLength={11}
                   className="w-full border-2 border-black p-3 font-bold uppercase text-xs outline-none focus:border-pink-hot"
-                  placeholder="e.g. 017XXXXXXXX"
+                  placeholder="018XXXXXXXX"
                 />
               </div>
               <div className="space-y-2">
@@ -117,8 +130,10 @@ export default function AdminSettings() {
                 <input 
                   type="text" 
                   value={settings.contactNumber}
-                  onChange={e => setSettings({...settings, contactNumber: e.target.value})}
+                  onChange={e => setSettings({...settings, contactNumber: e.target.value.replace(/\D/g, '').slice(0, 11)})}
+                  maxLength={11}
                   className="w-full border-2 border-black p-3 font-bold uppercase text-xs outline-none focus:border-pink-hot"
+                  placeholder="018XXXXXXXX"
                 />
               </div>
               <div className="space-y-2">
@@ -203,6 +218,62 @@ export default function AdminSettings() {
                   onChange={e => setSettings({...settings, freeDeliveryAbove: parseInt(e.target.value) || 0})}
                   className="w-full border-2 border-black p-3 font-bold uppercase text-xs outline-none opacity-30"
                 />
+              </div>
+           </div>
+        </section>
+
+        {/* Categories Section */}
+        <section className="bg-white border-2 border-black p-8 shadow-[8px_8px_0px_0px_rgba(255,0,127,0.1)]">
+           <div className="flex items-center gap-3 mb-8 border-b-2 border-black pb-4">
+              <div className="w-6 h-6 bg-pink-hot border border-black" />
+              <h2 className="text-2xl font-display uppercase">Taxonomy / Categories</h2>
+           </div>
+           <div className="space-y-4">
+              <div className="flex flex-wrap gap-2">
+                {(settings.categories || []).map((cat, idx) => (
+                  <div key={idx} className="flex items-center border-2 border-black bg-pink-50 pr-1 pl-3 py-1">
+                    <span className="text-[10px] font-black uppercase tracking-widest">{cat}</span>
+                    <button 
+                      type="button"
+                      onClick={() => setSettings({...settings, categories: settings.categories.filter((_, i) => i !== idx)})}
+                      className="ml-2 p-1 hover:text-pink-hot transition-colors"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <div className="flex gap-2">
+                <input 
+                  type="text"
+                  placeholder="NEW CATEGORY NAME"
+                  id="new-category"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      const val = (e.target as HTMLInputElement).value.trim().toLowerCase();
+                      if (val && !settings.categories.includes(val)) {
+                        setSettings({...settings, categories: [...settings.categories, val]});
+                        (e.target as HTMLInputElement).value = '';
+                      }
+                    }
+                  }}
+                  className="flex-grow border-2 border-black p-3 font-bold uppercase text-[10px] tracking-widest outline-none focus:border-pink-hot"
+                />
+                <button 
+                  type="button"
+                  onClick={() => {
+                    const el = document.getElementById('new-category') as HTMLInputElement;
+                    const val = el.value.trim().toLowerCase();
+                    if (val && !settings.categories.includes(val)) {
+                      setSettings({...settings, categories: [...settings.categories, val]});
+                      el.value = '';
+                    }
+                  }}
+                  className="bg-black text-white px-6 font-black uppercase text-[10px] tracking-widest"
+                >
+                  Add
+                </button>
               </div>
            </div>
         </section>

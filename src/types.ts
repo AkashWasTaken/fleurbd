@@ -40,7 +40,9 @@ export interface Order {
   total: number;
   paymentMethod: 'COD' | 'bKash' | 'Nagad' | 'Bank';
   transactionId?: string;
-  status: 'pending' | 'confirmed' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+  status: 'pending' | 'confirmed' | 'shipped' | 'delivered' | 'cancelled';
+  internalNote?: string;
+  deliveredAt?: string;
   createdAt: string;
 }
 
