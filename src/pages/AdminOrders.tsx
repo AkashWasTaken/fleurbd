@@ -68,6 +68,26 @@ export default function AdminOrders() {
     }
   };
 
+  const [confirmingDeleteId, setConfirmingDeleteId] = useState<string | null>(null);
+
+  const handleDeleteOrder = async (id: string) => {
+    if (confirmingDeleteId !== id) {
+      setConfirmingDeleteId(id);
+      setTimeout(() => setConfirmingDeleteId(null), 3000);
+      return;
+    }
+
+    try {
+      await orderService.deleteOrder(id);
+      toast.success('ORDER ERASED FROM RECORDS');
+      setSelectedOrder(null);
+      fetchOrders();
+      setConfirmingDeleteId(null);
+    } catch (err) {
+      toast.error('FAILED TO SCRUB ORDER');
+    }
+  };
+
   const filtered = orders.filter(o => {
     const matchesSearch = o.orderNumber.toLowerCase().includes(searchTerm.toLowerCase()) || 
                           o.customer.name.toLowerCase().includes(searchTerm.toLowerCase());
@@ -75,9 +95,9 @@ export default function AdminOrders() {
     if (statusFilter === 'new') return matchesSearch && o.status === 'pending';
     if (statusFilter === 'confirmed') return matchesSearch && o.status === 'confirmed';
     if (statusFilter === 'to-deliver') return matchesSearch && o.status === 'shipped';
-    if (statusFilter === 'history') return matchesSearch && (o.status === 'delivered' || o.status === 'cancelled');
+    if (statusFilter === 'history') return matchesSearch && o.status === 'delivered';
     
-    return matchesSearch;
+    return matchesSearch && o.status !== 'cancelled';
   });
 
   return (
@@ -146,8 +166,7 @@ export default function AdminOrders() {
                     { value: 'pending', label: 'PENDING' },
                     { value: 'confirmed', label: 'CONFIRMED' },
                     { value: 'shipped', label: 'TO BE DELIVERED' },
-                    { value: 'delivered', label: 'DELIVERED' },
-                    { value: 'cancelled', label: 'CANCELLED' }
+                    { value: 'delivered', label: 'DELIVERED' }
                   ].map(s => (
                     <option key={s.value} value={s.value}>{s.label}</option>
                   ))}
@@ -229,8 +248,7 @@ export default function AdminOrders() {
                           { value: 'pending', label: 'PENDING' },
                           { value: 'confirmed', label: 'CONFIRMED' },
                           { value: 'shipped', label: 'TO BE DELIVERED' },
-                          { value: 'delivered', label: 'DELIVERED' },
-                          { value: 'cancelled', label: 'CANCELLED' }
+                          { value: 'delivered', label: 'DELIVERED' }
                         ].map(s => (
                           <option key={s.value} value={s.value}>{s.label}</option>
                         ))}
@@ -351,21 +369,13 @@ export default function AdminOrders() {
               
               <div className="pt-6">
                 <button 
-                  onClick={async () => {
-                    if (confirm('DESTRUCTIVE ACTION: ERASE ORDER FROM PIPELINE?')) {
-                      try {
-                        await orderService.deleteOrder(selectedOrder._id!);
-                        toast.success('ORDER ERASED FROM RECORDS');
-                        setSelectedOrder(null);
-                        fetchOrders();
-                      } catch (err) {
-                        toast.error('FAILED TO SCRUB ORDER');
-                      }
-                    }
-                  }}
-                  className="w-full py-4 border-2 border-red-200 text-red-300 font-black uppercase text-[10px] tracking-[0.3em] hover:bg-black hover:text-red-500 hover:border-black transition-all"
+                   onClick={() => handleDeleteOrder(selectedOrder._id!)}
+                   className={`w-full py-4 border-2 transition-all font-black uppercase text-[10px] tracking-[0.3em]
+                     ${confirmingDeleteId === selectedOrder._id 
+                       ? 'bg-red-500 text-white border-black animate-pulse' 
+                       : 'border-red-200 text-red-300 hover:bg-black hover:text-red-500 hover:border-black'}`}
                 >
-                  Terminate Order
+                   {confirmingDeleteId === selectedOrder._id ? 'Confirm scrub?' : 'Terminate Order'}
                 </button>
               </div>
             </div>

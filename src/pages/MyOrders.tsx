@@ -60,15 +60,34 @@ export default function MyOrders() {
     }
   };
 
+  const [confirmingId, setConfirmingId] = useState<string | null>(null);
+
   const handleCancelOrder = async (orderId: string) => {
-    if (!confirm('Are you sure you want to cancel this order?')) return;
+    if (confirmingId !== orderId) {
+      setConfirmingId(orderId);
+      setTimeout(() => setConfirmingId(null), 3000); // Reset after 3s
+      return;
+    }
 
     try {
       await orderService.updateOrder(orderId, { status: 'cancelled' });
+      
+      // Update local state to filter it out immediately
+      setOrders(prev => prev.filter(o => o.id !== orderId && o._id !== orderId));
+      
+      // Also remove from local storage
+      const orderToVanish = orders.find(o => o.id === orderId || o._id === orderId);
+      if (orderToVanish) {
+        const savedOrders = JSON.parse(localStorage.getItem('fleur_my_orders') || '[]');
+        const updatedLocalStorage = savedOrders.filter((num: string) => num !== orderToVanish.orderNumber);
+        localStorage.setItem('fleur_my_orders', JSON.stringify(updatedLocalStorage));
+      }
+      
       toast.success('ORDER CANCELLED');
-      fetchMyOrders();
+      setConfirmingId(null);
     } catch (err) {
-      toast.error('FAILED TO CANCEL');
+      console.error('Cancel order error:', err);
+      toast.error('FAILED TO CANCEL ORDER');
     }
   };
 
@@ -137,10 +156,14 @@ export default function MyOrders() {
 
                          {(order.status === 'pending' || order.status === 'confirmed') && (
                            <button 
-                             onClick={() => handleCancelOrder(order._id!)}
-                             className="flex items-center justify-center gap-2 w-full py-3 border-2 border-red-50 text-red-200 hover:border-red-500 hover:text-red-500 transition-all font-black uppercase text-[9px] tracking-widest mt-[-10px]"
+                             onClick={() => handleCancelOrder(order.id || order._id!)}
+                             className={`flex items-center justify-center gap-2 w-full py-4 border-2 transition-all font-black uppercase text-[10px] tracking-widest mt-2
+                               ${confirmingId === (order.id || order._id) 
+                                 ? 'bg-red-500 text-white border-black animate-pulse' 
+                                 : 'border-red-500 text-red-500 hover:bg-black hover:text-white hover:border-black'}`}
                            >
-                             <XCircle size={14} /> Cancel Order
+                             <XCircle size={16} /> 
+                             {confirmingId === (order.id || order._id) ? 'Confirm Cancel?' : 'Cancel Order'}
                            </button>
                          )}
 

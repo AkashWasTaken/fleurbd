@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useCartStore } from '../store/cartStore';
 import toast from 'react-hot-toast';
 import { Check, ArrowRight, Smartphone, Building, CreditCard, Truck } from 'lucide-react';
@@ -9,7 +9,15 @@ import { orderService, settingsService } from '../services/dataService';
 type Step = 'details' | 'payment' | 'done';
 
 export default function Checkout() {
-  const { items, total, clearCart } = useCartStore();
+  const location = useLocation();
+  const buyNowItem = location.state?.buyNowItem;
+  
+  const { items: cartItems, total: cartTotal, clearCart } = useCartStore();
+  
+  // Use standalone item if provided via Buy Now, otherwise use cart items
+  const items = buyNowItem ? [buyNowItem] : cartItems;
+  const getSubtotal = buyNowItem ? () => buyNowItem.price * buyNowItem.qty : cartTotal;
+
   const [step, setStep] = useState<Step>('details');
   const [paymentMethod, setPaymentMethod] = useState<string>('COD');
   const [settings, setSettings] = useState<StoreSettings | null>(null);
@@ -95,9 +103,9 @@ export default function Checkout() {
         qty: i.qty,
         image: i.image
       })),
-      subtotal: total(),
+      subtotal: getSubtotal(),
       deliveryCharge,
-      total: total() + deliveryCharge,
+      total: getSubtotal() + deliveryCharge,
       paymentMethod,
       transactionId: formData.txnId
     };
@@ -110,7 +118,12 @@ export default function Checkout() {
         localStorage.setItem('fleur_my_orders', JSON.stringify(myOrders.slice(-10))); // keep last 10
       }
       toast.success(`ORDER PLACED! WE'LL CALL YOU SOON.`);
-      clearCart();
+      
+      // Only clear cart if we were using it
+      if (!buyNowItem) {
+        clearCart();
+      }
+      
       setStep('done');
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (error) {
@@ -233,7 +246,7 @@ export default function Checkout() {
             <div className="border-t-2 border-pink-100 pt-10 flex flex-col gap-4 mb-10">
                <div className="flex justify-between items-center text-pink-400 font-black uppercase text-[10px] tracking-widest">
                   <span>Subtotal:</span>
-                  <span>৳{total()}</span>
+                  <span>৳{getSubtotal()}</span>
                </div>
                <div className="flex justify-between items-center text-pink-400 font-black uppercase text-[10px] tracking-widest">
                   <span>Delivery ({formData.area === 'inside-dhaka' ? 'Inside Dhaka' : 'Outside Dhaka'}):</span>
@@ -241,7 +254,7 @@ export default function Checkout() {
                </div>
                <div className="flex justify-between items-center pt-4 border-t border-pink-100">
                  <span className="text-2xl font-display font-black uppercase text-pink-400">Grand Total:</span>
-                 <span className="text-5xl font-display font-black text-pink-600 tracking-tighter">৳{total() + deliveryCharge}</span>
+                 <span className="text-5xl font-display font-black text-pink-600 tracking-tighter">৳{getSubtotal() + deliveryCharge}</span>
                </div>
             </div>
 

@@ -124,8 +124,18 @@ export default function ProductDetail() {
               <div className="flex gap-4 mb-6">
                  <button 
                    onClick={() => {
-                     handleAddToCart();
-                     navigate('/checkout');
+                     navigate('/checkout', { 
+                       state: { 
+                         buyNowItem: {
+                           id: product._id || '',
+                           name: product.name,
+                           price: product.price,
+                           image: product.images[0]?.url || 'https://picsum.photos/seed/placeholder/800/800',
+                           qty: 1,
+                           slug: product.slug
+                         } 
+                       } 
+                     });
                    }}
                    disabled={product.stock === 0}
                    className="btn-fleur flex-grow py-5 text-xl h-16"
